@@ -53,22 +53,42 @@ class EchoLayer(YowInterfaceLayer):
                     if isVote:  
                         if cant>1:
                             #Tiene mas de un voto a la vez
+                            outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                                "Sólo puedes votar por 1 participante a la vez. Por favor elige uno y vuelve a intentar",
+                                to = messageProtocolEntity.getFrom())
+                            self.toLower(outgoingMessageProtocolEntity)
                             msg = {"name": messageProtocolEntity.getNotify(),"number": number,"text": messageProtocolEntity.getBody(),"vote":False,"date": datetime.datetime.utcnow()}
                             whatsapp.insert_one(msg)  
                         else:
                             currentCampaign = campaign.find_one({"active":True})
+
                             if currentCampaign==None:
+                                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                                        "❌ CIERRE DE VOTACIÓN. Atento a los resultados en tu televisor y recuerda seguirme en Twitter @ISA_Vertigo. Gracias por participar.",
+                                        to = messageProtocolEntity.getFrom())
                                 msg = {"name": messageProtocolEntity.getNotify(),"number": number,"text": messageProtocolEntity.getBody(),"vote":False,"date": datetime.datetime.utcnow()}
                                 whatsapp.insert_one(msg)
                             else:
                                 votes = whatsapp.find_one({"$and":[{"number": number},{"vote":True},{"campaign":currentCampaign["token"]}]})
                                 if votes==None:
+                                    outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                                        "Hemos recibido tu voto. Gracias por participar 👍🏻",
+                                        to = messageProtocolEntity.getFrom())
                                     msg = {"name": messageProtocolEntity.getNotify(),"number": number,"text": messageProtocolEntity.getBody(),"vote":True,"campaign":currentCampaign["token"],"topic":topicFound,"date": datetime.datetime.utcnow()}
                                     whatsapp.insert_one(msg)
                                 else:
+                                    outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                                        "Sólo puedes votar 1 vez. Por favor espera la próxima votación. Tu último voto fue por "+votes["topic"].encode('utf8'),
+                                        to = messageProtocolEntity.getFrom())
                                     msg = {"name": messageProtocolEntity.getNotify(),"number": number,"text": messageProtocolEntity.getBody(),"vote":False,"date": datetime.datetime.utcnow()}
                                     whatsapp.insert_one(msg)
+                            self.toLower(outgoingMessageProtocolEntity)
                     else:        
+                        invitadoslist = ', '.join(invitados)
+                        outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                            "Recuerda votar por uno de los invitados: "+invitadoslist,
+                            to = messageProtocolEntity.getFrom())
+                        self.toLower(outgoingMessageProtocolEntity)
                         msg = {"name": messageProtocolEntity.getNotify(),"number": number,"text": messageProtocolEntity.getBody(),"vote":False,"date": datetime.datetime.utcnow()}
                         whatsapp.insert_one(msg)
                 else:
@@ -77,6 +97,10 @@ class EchoLayer(YowInterfaceLayer):
                 
                 print messageProtocolEntity.getFrom(),messageProtocolEntity.getBody()
             elif messageProtocolEntity.getType()=='media':
+                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                    "Lo siento, no estamos recibiendo archivos",
+                    to = messageProtocolEntity.getFrom())
+                self.toLower(outgoingMessageProtocolEntity)
                 print 'media message'
             
             self.toLower(receipt)

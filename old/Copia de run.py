@@ -12,7 +12,7 @@ from yowsup.env                                import YowsupEnv
 #import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-CREDENTIALS = ("56971354325", "g14vb3IKD6wa/LtgHbFnhUqpmmE=") #replace with your phone and password
+CREDENTIALS = ("56996432074", "qk7vtlw46R9RsbxCxYfmTp0of50=") #replace with your phone and password
 
 if __name__==  "__main__":
     stackBuilder = YowStackBuilder()
